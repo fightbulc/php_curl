@@ -1,0 +1,22 @@
+{
+    "name": "efides/PHP_CURL",
+    "description": "PHP CURL as object-oriented implementation.",
+    "homepage": "https://github.com/fightbulc/PHP_CURL",
+    "license": "GNU GENERAL PUBLIC LICENSE",
+    "authors": [
+        {
+            "name": "BauerUK",
+            "homepage": "https://github.com/BauerUK"
+        }
+    ],
+
+    "minimum-stability": "dev",
+
+    "require": {
+        "php": ">=5.3.3",
+    },
+
+    "autoload": {
+        "psr-0": { "CURL": "src/" }
+    }
+}
