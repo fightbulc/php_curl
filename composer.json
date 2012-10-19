@@ -1,7 +1,7 @@
 {
-    "name": "efides/php_curl",
+    "name": "fightbulc/php_curl",
     "description": "PHP CURL as object-oriented implementation.",
-    "homepage": "https://github.com/fightbulc/PHP_CURL",
+    "homepage": "https://github.com/fightbulc/php_curl",
     "license": "GPL-3.0",
     "authors": [
         {
