@@ -7,67 +7,75 @@ PHP_CURL is an object-oriented implementation of the PHP's functional CURL inter
 Since PHP_CURL allows for method-chaining, the static `init` method is used to
 generate an instance of a CURL object (similar to `curl_init`).
 
-    <?php
-	
-	$curl = CURL::init("http://reddit.com/r/php/.json");
+```php
+<?php
 
-    ?>
+$curl = \Wrapper\Curl\Curl::init('http://reddit.com/r/php/.json');
+
+?>
+```
 
 We can then set some CURL options:
 
-    <?php
+```php
+<?php
 
-    $curl = CURL::init("http://www.reddit.com/r/php/.json")
-                ->setReturnTransfer(TRUE);
+$curl = \Wrapper\Curl\Curl::init('http://www.reddit.com/r/php/.json')->setReturnTransfer(true);
 
-    ?>
+?>
+```
 
 All `set...` functions return an instance of the current CURL object, so you
 are free to set as many of the options in a row as necessary before executing.
 
-    <?php
+```php
+<?php
 
-    $curl = CURL::init("http://www.reddit.com/r/php/.json")
-            ->setReturnTransfer(TRUE);
+$curl = \Wrapper\Curl\Curl::init('http://www.reddit.com/r/php/.json')->setReturnTransfer(true);
+$response = $curl->execute():
 
-    $response = $curl->execute():
+?>
+```
 
-    ?>
-
-All of the functions are close matches to the CURLOPT_* alternatives.
+All of the functions are close matches to the `CURLOPT_*` alternatives.
 
 ## Comparison to functional cURL
 
 The basic example given in the PHP manual for functional cURL is as follows:
 
-    <?php
+```php
+<?php
 
-    $ch = curl_init("http://www.example.com/");
-    $fp = fopen("example_homepage.txt", "w");
+$ch = curl_init('http://www.example.com/');
+$fp = fopen('example_homepage.txt', 'w');
 
-    curl_setopt($ch, CURLOPT_FILE, $fp);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
+curl_setopt($ch, CURLOPT_FILE, $fp);
+curl_setopt($ch, CURLOPT_HEADER, 0);
 
-    curl_exec($ch);
-    curl_close($ch);
-    fclose($fp);
-    ?>
+curl_exec($ch);
+curl_close($ch);
+fclose($fp);
+
+?>
+```
 
 We can perform the same operation with PHP_CURL like so:
 
-    <?php
+```php
+<?php
 
-    $fp = fopen("example_homepage.txt", "w");
+$fp = fopen('example_homepage.txt', 'w');
 
-    CURL::init("http://www.example.com/")
+\Wrapper\Curl\Curl::init('http://www.example.com/')
         ->setFile($fp)
         ->setHeader(0)
         ->execute()
         ->close();
 
-    fclose($fp);
+fclose($fp);
 
-    ?>
+?>
+```
 
 There isn't much of a difference in terms of code-size or performance, however,
 the PHP_CURL approach is arguably more readible, and less repeatitive.
@@ -96,13 +104,13 @@ than happy to open up this project to more developers if there is any demand.
 
 ## FAQ
 
-**Q. Why `CURL::init()` instead of `new CURL()`?**
+**Q. Why `\Wrapper\Curl\Curl::init()` instead of `new \Wrapper\Curl\Curl()`?**
 
-A. If you want to take advantage of method-chaining, use `CURL::init`,
-since PHP's constructors don't allow for things like `(new Curl())->foo()`.
+A. If you want to take advantage of method-chaining, use `\Wrapper\Curl\Curl::init`,
+since PHP's constructors don't allow for things like `(new \Wrapper\Curl\Curl())->foo()`.
 
 However, if you prefer to instanciate an object and then use that object, 
-support for `$foo = new CURL()` is allowed. Both will work.
+support for `$foo = new \Wrapper\Curl\Curl()` is allowed. Both will work.
 
 **Q. Couldn't you have just done this with a single `__call()` wrapper, or use
 `__get()` and `__set()`?**
