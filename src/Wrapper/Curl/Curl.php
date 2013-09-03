@@ -1,5 +1,4 @@
 <?php
-
 //    Copyright (C) 2011 BauerUK
 //
 //    This program is free software: you can redistribute it and/or modify
@@ -15,105 +14,159 @@
 //    You should have received a copy of the GNU General Public License
 //    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- *
- * @param string Version
- * @param int ErrNo
- * @param string Error
- */
-class CURL {
+namespace Wrapper\Curl;
 
+/**
+ * Class Curl
+ *
+ * @package Wrapper\Curl
+ * @author BauerUK <https://github.com/BauerUK>
+ * @author Andrey Kolchenko <komexx@gmail.com>
+ * @property string $version
+ * @property int $err_no
+ * @property string $error
+ */
+class Curl
+{
+    /**
+     * @var resource
+     */
+    protected $curl_handler;
+    /**
+     * @var array
+     */
     private $http200Aliases = array();
+    /**
+     * @var array
+     */
     private $httpHeaders = array();
+    /**
+     * @var array
+     */
     private $postQuotes = array();
+    /**
+     * @var array
+     */
     private $quotes = array();
 
-    protected $curl_handler;
-
-    public function __construct($url = null) {
+    /**
+     * @param string|null $url Optional URL to use for this Curl session
+     */
+    public function __construct($url = null)
+    {
         $this->curl_handler = curl_init($url);
+    }
+
+    /**
+     * Initiate a Curl object
+     *
+     * @param string $url Optional URL to use for this Curl session
+     *
+     * @return Curl The initiated Curl object
+     */
+    public static function init($url = null)
+    {
+        return new Curl($url);
     }
 
     /**
      *
      * @param int $opt
+     *
      * @return string|bool|array
      */
-    public function getInfo($opt = NULL) {
+    public function getInfo($opt = null)
+    {
         return curl_getinfo($this->curl_handler, $opt);
     }
 
     /**
      * Perform a cURL session
+     *
      * @return mixed
      */
-    public function execute() {
+    public function execute()
+    {
         return curl_exec($this->curl_handler);
     }
 
     /**
      * Sets an option on the current Curl handler
-     * @param int $option The CURL constant
+     *
+     * @param int $option The Curl constant
      * @param mixed $value The value for this option
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setOption($option, $value) {
+    public function setOption($option, $value)
+    {
         curl_setopt($this->curl_handler, $option, $value);
+
         return $this;
     }
 
     /**
      * Copy this cURL handle along with all of its preferences
+     *
      * @return resource
      */
-    public function copyHandle() {
+    public function copyHandle()
+    {
         return curl_copy_handle($this->curl_handler);
     }
 
     /**
      * Close this cURL session
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function close() {
+    public function close()
+    {
         curl_close($this->curl_handler);
+
         return $this;
     }
 
-    public function __get($name) {
-
+    /**
+     * Get version, error or error_no.
+     *
+     * @param string $name
+     *
+     * @return array|int|string
+     * @throws \Exception If property is unknown
+     */
+    public function __get($name)
+    {
         switch ($name) {
-
-            case "ErrNo":
+            case 'error_no':
                 return curl_errno($this->curl_handler);
-                break;
-
-            case "Error":
+            case 'error':
                 return curl_error($this->curl_handler);
-                break;
-
-            case "Version":
+            case 'version':
                 return curl_version();
-                break;
         }
-
-        throw new Exception("Unknown field '$name'!");
+        throw new \Exception(sprintf('Unknown property "%s"', $name));
     }
 
     /**
      * CURLINFO_EFFECTIVE_URL
      * Last effective URL
+     *
      * @return string
      */
-    public function getEffectiveUrl() {
+    public function getEffectiveUrl()
+    {
         return $this->getInfo(CURLINFO_EFFECTIVE_URL);
     }
 
     /**
      * CURLINFO_HTTP_CODE
      * Last received HTTP code
+     *
      * @return string
      */
-    public function getHTTPCode() {
+    public function getHTTPCode()
+    {
         return $this->getInfo(CURLINFO_HTTP_CODE);
     }
 
@@ -121,54 +174,66 @@ class CURL {
      * CURLINFO_FILETIME
      * Remote time of the retrieved document, if -1 is returned the time of the
      * document is unknown
+     *
      * @return string
      */
-    public function getFileTime() {
+    public function getFileTime()
+    {
         return $this->getInfo(CURLINFO_FILETIME);
     }
 
     /**
      * CURLINFO_TOTAL_TIME
      * Total transaction time in seconds for last transfer
+     *
      * @return string
      */
-    public function getTotalTime() {
+    public function getTotalTime()
+    {
         return $this->getInfo(CURLINFO_TOTAL_TIME);
     }
 
     /**
      * CURLINFO_NAMELOOKUP_TIME
      * Time in seconds until name resolving was complete
+     *
      * @return string
      */
-    public function getNameLookupTime() {
+    public function getNameLookupTime()
+    {
         return $this->getInfo(CURLINFO_NAMELOOKUP_TIME);
     }
 
     /**
      * CURLINFO_CONNECT_TIME
      * Time in seconds it took to establish the connection
+     *
      * @return string
      */
-    public function getConnectTime() {
+    public function getConnectTime()
+    {
         return $this->getInfo(CURLINFO_CONNECT_TIME);
     }
 
     /**
      * CURLINFO_PRETRANSFER_TIME
      * Time in seconds from start until just before file transfer begins
+     *
      * @return string
      */
-    public function getPreTransferTime() {
+    public function getPreTransferTime()
+    {
         return $this->getInfo(CURLINFO_PRETRANSFER_TIME);
     }
 
     /**
      * CURLINFO_STARTTRANSFER_TIME
      * Time in seconds until the first byte is about to be transferred
+     *
      * @return string
      */
-    public function getStartTransferTime() {
+    public function getStartTransferTime()
+    {
         return $this->getInfo(CURLINFO_STARTTRANSFER_TIME);
     }
 
@@ -176,55 +241,66 @@ class CURL {
      * CURLINFO_REDIRECT_TIME
      * Time in seconds of all redirection steps before final transaction was
      * started
+     *
      * @return string
      */
-    public function getRedirectTime() {
+    public function getRedirectTime()
+    {
         return $this->getInfo(CURLINFO_REDIRECT_TIME);
     }
 
     /**
      * CURLINFO_SIZE_UPLOAD
      * Total number of bytes uploaded
+     *
      * @return string
      */
-    public function getSizeUpload() {
+    public function getSizeUpload()
+    {
         return $this->getInfo(CURLINFO_SIZE_UPLOAD);
     }
 
     /**
      * CURLINFO_SIZE_DOWNLOAD
      * Total number of bytes downloaded
+     *
      * @return string
      */
-    public function getSizeDownload() {
+    public function getSizeDownload()
+    {
         return $this->getInfo(CURLINFO_SIZE_DOWNLOAD);
     }
-
 
     /**
      * CURLINFO_SPEED_DOWNLOAD
      * Average download speed
+     *
      * @return string
      */
-    public function getSpeedDownload() {
+    public function getSpeedDownload()
+    {
         return $this->getInfo(CURLINFO_SPEED_DOWNLOAD);
     }
 
     /**
      * CURLINFO_SPEED_UPLOAD
      * Average upload speed
+     *
      * @return string
      */
-    public function getSpeedUpload() {
+    public function getSpeedUpload()
+    {
         return $this->getInfo(CURLINFO_SPEED_UPLOAD);
     }
 
     /**
      * CURLINFO_HEADER_SIZE
      * Total size of all headers received
+     *
      * @return string
      */
-    public function getHeaderSize() {
+    public function getHeaderSize()
+    {
         return $this->getInfo(CURLINFO_HEADER_SIZE);
     }
 
@@ -232,18 +308,22 @@ class CURL {
      * CURLINFO_HEADER_OUT
      * The request string sent. For this to work, add the CURLINFO_HEADER_OUT
      * option to the handle by calling curl_setopt()
+     *
      * @return string
      */
-    public function getHeaderOut() {
+    public function getHeaderOut()
+    {
         return $this->getInfo(CURLINFO_HEADER_OUT);
     }
 
     /**
      * CURLINFO_REQUEST_SIZE
      * Total size of issued requests, currently only for HTTP requests
+     *
      * @return string
      */
-    public function getRequestSize() {
+    public function getRequestSize()
+    {
         return $this->getInfo(CURLINFO_REQUEST_SIZE);
     }
 
@@ -251,27 +331,33 @@ class CURL {
      * CURLINFO_SSL_VERIFYRESULT
      * Result of SSL certification verification requested by setting
      * CURLOPT_SSL_VERIFYPEER
+     *
      * @return string
      */
-    public function getSSLVerifyResult() {
+    public function getSSLVerifyResult()
+    {
         return $this->getInfo(CURLINFO_SSL_VERIFYRESULT);
     }
 
     /**
      * CURLINFO_CONTENT_LENGTH_DOWNLOAD
      * content-length of download, read from Content-Length: field
+     *
      * @return string
      */
-    public function getContentLengthDownload() {
+    public function getContentLengthDownload()
+    {
         return $this->getInfo(CURLINFO_CONTENT_LENGTH_DOWNLOAD);
     }
 
     /**
      * CURLINFO_CONTENT_LENGTH_UPLOAD
      * Specified size of upload
+     *
      * @return string
      */
-    public function getContentLengthUpload() {
+    public function getContentLengthUpload()
+    {
         return $this->getInfo(CURLINFO_CONTENT_LENGTH_UPLOAD);
     }
 
@@ -279,9 +365,11 @@ class CURL {
      * CURLINFO_CONTENT_TYPE
      * Content-Type: of the requested document, NULL indicates server did not
      * send valid Content-Type: header
+     *
      * @return string
      */
-    public function getContentType() {
+    public function getContentType()
+    {
         return $this->getInfo(CURLINFO_CONTENT_TYPE);
     }
 
@@ -289,20 +377,26 @@ class CURL {
      * CURLOPT_AUTOREFERER
      * TRUE to automatically set the Referer: field in
      * requests where it follows a Location: redirect.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setAutoReferer($value) {
+    public function setAutoReferer($value)
+    {
         return $this->setOption(CURLOPT_AUTOREFERER, $value);
     }
 
     /**
      * CURLOPT_BINARYTRANSFER
      * TRUE to return the raw output when CURLOPT_RETURNTRANSFER is used.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setBinaryTransfer($value) {
+    public function setBinaryTransfer($value)
+    {
         return $this->setOption(CURLOPT_BINARYTRANSFER, $value);
     }
 
@@ -314,10 +408,13 @@ class CURL {
      * cookies, independent if they are session cookies or not.
      * Session cookies are cookies without expiry date and they are meant to
      * be alive and existing for this "session" only.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setCookieSession($value) {
+    public function setCookieSession($value)
+    {
         return $this->setOption(CURLOPT_COOKIESESSION, $value);
     }
 
@@ -327,10 +424,13 @@ class CURL {
      * STDERR on secure transfers.
      * Available since PHP 5.3.2.
      * Requires CURLOPT_VERBOSE to be on to have an effect.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setCertInfo($value) {
+    public function setCertInfo($value)
+    {
         // NOTE: Should this automatically set CURLOPT_VERBOSE?
         // NOTE: This is only available since 5.3.2, so maybe we should
         // check PHP version or the existence of the constant before setting
@@ -340,10 +440,13 @@ class CURL {
     /**
      * CURLOPT_CRLF
      * TRUE to convert Unix newlines to CRLF newlines on transfers.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setCrLf($value) {
+    public function setCrLf($value)
+    {
         return $this->setOption(CURLOPT_CRLF, $value);
     }
 
@@ -351,10 +454,13 @@ class CURL {
      * CURLOPT_DNS_USE_GLOBAL_CACHE
      * TRUE to use a global DNS cache.
      * This option is not thread-safe and is enabled by default.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setDNSUseGlobalCache($value) {
+    public function setDNSUseGlobalCache($value)
+    {
         return $this->setOption(CURLOPT_DNS_USE_GLOBAL_CACHE, $value);
     }
 
@@ -363,10 +469,13 @@ class CURL {
      * TRUE to fail silently if the HTTP code returned is greater than or
      * equal to 400. The default behavior is to return the page normally,
      * ignoring the code.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFailOnError($value) {
+    public function setFailOnError($value)
+    {
         return $this->setOption(CURLOPT_FAILONERROR, $value);
     }
 
@@ -375,10 +484,13 @@ class CURL {
      * TRUE to attempt to retrieve the modification date of the remote document.
      * This value can be retrieved using the CURLINFO_FILETIME option with
      * curl_getinfo().
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFileTime($value) {
+    public function setFileTime($value)
+    {
         return $this->setOption(CURLOPT_FILETIME, $value);
     }
 
@@ -388,10 +500,13 @@ class CURL {
      * server sends as part of the HTTP header (note this is recursive, PHP
      * will follow as many "Location: " headers that it is sent, unless
      * CURLOPT_MAXREDIRS is set).
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFollowLocation($value) {
+    public function setFollowLocation($value)
+    {
         return $this->setOption(CURLOPT_FOLLOWLOCATION, $value);
     }
 
@@ -399,20 +514,26 @@ class CURL {
      * CURLOPT_FORBID_REUSE
      * TRUE to force the connection to explicitly close when it has finished
      * processing, and not be pooled for reuse.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setForbidReuse($value) {
+    public function setForbidReuse($value)
+    {
         return $this->setOption(CURLOPT_FORBID_REUSE, $value);
     }
 
     /**
      * CURLOPT_FRESH_CONNECT
      * TRUE to force the use of a new connection instead of a cached one.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFreshConnect($value) {
+    public function setFreshConnect($value)
+    {
         return $this->setOption(CURLOPT_FRESH_CONNECT, $value);
     }
 
@@ -420,10 +541,13 @@ class CURL {
      * CURLOPT_FTP_USE_EPRT
      * TRUE to use EPRT (and LPRT) when doing active FTP downloads.
      * Use FALSE to disable EPRT and LPRT and use PORT only.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFtpUseEPRT($value) {
+    public function setFtpUseEPRT($value)
+    {
         return $this->setOption(CURLOPT_FTP_USE_EPRT, $value);
     }
 
@@ -431,50 +555,65 @@ class CURL {
      * CURLOPT_FTP_USE_EPSV
      * TRUE to first try an EPSV command for FTP transfers before reverting
      * back to PASV. Set to FALSE to disable EPSV.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFtpUseEPSV($value) {
+    public function setFtpUseEPSV($value)
+    {
         return $this->setOption(CURLOPT_FTP_USE_EPSV, $value);
     }
 
     /**
      * CURLOPT_FTPAPPEND
      * TRUE to append to the remote file instead of overwriting it.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFtpAppend($value) {
+    public function setFtpAppend($value)
+    {
         return $this->setOption(CURLOPT_FTPAPPEND, $value);
     }
 
     /**
      * CURLOPT_FTPASCII
      * An alias of CURLOPT_TRANSFERTEXT. Use that instead.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFtpAscii($value) {
+    public function setFtpAscii($value)
+    {
         return $this->setOption(CURLOPT_FTPASCII, $value);
     }
 
     /**
      * CURLOPT_FTPLISTONLY
      * TRUE to only list the names of an FTP directory.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFtpListOnly($value) {
+    public function setFtpListOnly($value)
+    {
         return $this->setOption(CURLOPT_FTPLISTONLY, $value);
     }
 
     /**
      * CURLOPT_HEADER
      * TRUE to include the header in the output.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHeader($value) {
+    public function setHeader($value)
+    {
         return $this->setOption(CURLOPT_HEADER, $value);
     }
 
@@ -482,10 +621,13 @@ class CURL {
      * CURLINFO_HEADER_OUT
      * TRUE to track the handle's request string.
      * Available since PHP 5.1.3. The CURLINFO_ prefix is intentional.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHeaderOut($value) {
+    public function setHeaderOut($value)
+    {
         return $this->setOption(CURLINFO_HEADER_OUT, $value);
     }
 
@@ -493,30 +635,39 @@ class CURL {
      * CURLOPT_HTTPGET
      * TRUE to reset the HTTP request method to GET. Since GET is the default,
      * this is only necessary if the request method has been changed.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHttpGet($value) {
+    public function setHttpGet($value)
+    {
         return $this->setOption(CURLOPT_HTTPGET, $value);
     }
 
     /**
      * CURLOPT_HTTPPROXYTUNNEL
      * TRUE to tunnel through a given HTTP proxy.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHttpProxyTunnel($value) {
+    public function setHttpProxyTunnel($value)
+    {
         return $this->setOption(CURLOPT_HTTPPROXYTUNNEL, $value);
     }
 
     /**
      * CURLOPT_MUTE
      * TRUE to be completely silent with regards to the cURL functions.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setMute($value) {
+    public function setMute($value)
+    {
         return $this->setOption(CURLOPT_MUTE, $value);
     }
 
@@ -524,10 +675,13 @@ class CURL {
      * CURLOPT_NETRC
      * TRUE to scan the ~/.netrc file to find a username and password for the
      * remote site that a connection is being established with.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setNetRc($value) {
+    public function setNetRc($value)
+    {
 
         // TODO: Not obvious? -- should probably be renamed to setScanRCFile or
         // setScanRC or setUseRc?
@@ -538,10 +692,13 @@ class CURL {
      * CURLOPT_NOBODY
      * TRUE to exclude the body from the output. Request method is then set to
      * HEAD. Changing this to FALSE does not change it to GET.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setNobody($value) {
+    public function setNobody($value)
+    {
         return $this->setOption(CURLOPT_NOBODY, $value);
     }
 
@@ -550,10 +707,13 @@ class CURL {
      * TRUE to disable the progress meter for cURL transfers.
      * Note: PHP automatically sets this option to TRUE, this should only be
      * changed for debugging purposes.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setNoProgress($value) {
+    public function setNoProgress($value)
+    {
         return $this->setOption(CURLOPT_NOPROGRESS, $value);
     }
 
@@ -563,10 +723,13 @@ class CURL {
      * PHP process. This is turned on by default in multi-threaded SAPIs so
      * timeout options can still be used.
      * Added in cURL 7.10.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setNoSignal($value) {
+    public function setNoSignal($value)
+    {
         return $this->setOption(CURLOPT_NOSIGNAL, $value);
     }
 
@@ -574,10 +737,13 @@ class CURL {
      * CURLOPT_POST
      * TRUE to do a regular HTTP POST. This POST is the normal
      * application/x-www-form-urlencoded kind, most commonly used by HTML forms.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setPost($value) {
+    public function setPost($value)
+    {
         return $this->setOption(CURLOPT_POST, $value);
     }
 
@@ -585,10 +751,13 @@ class CURL {
      * CURLOPT_PUT
      * TRUE to HTTP PUT a file. The file to PUT must be set with CURLOPT_INFILE
      * and CURLOPT_INFILESIZE.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setPut($value) {
+    public function setPut($value)
+    {
         return $this->setOption(CURLOPT_PUT, $value);
     }
 
@@ -596,10 +765,13 @@ class CURL {
      * CURLOPT_RETURNTRANSFER
      * TRUE to return the transfer as a string of the return value of
      * curl_exec() instead of outputting it out directly.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setReturnTransfer($value) {
+    public function setReturnTransfer($value)
+    {
         return $this->setOption(CURLOPT_RETURNTRANSFER, $value);
     }
 
@@ -611,10 +783,13 @@ class CURL {
      * the CURLOPT_CAPATH option.
      * TRUE by default as of cURL 7.10.
      * Default bundle installed as of cURL 7.10.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setSslVerifyPeer($value) {
+    public function setSslVerifyPeer($value)
+    {
         return $this->setOption(CURLOPT_SSL_VERIFYPEER, $value);
     }
 
@@ -623,10 +798,13 @@ class CURL {
      * TRUE to use ASCII mode for FTP transfers. For LDAP, it retrieves data
      * in plain text instead of HTML. On Windows systems, it will not set
      * STDOUT to binary mode.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setTransferText($value) {
+    public function setTransferText($value)
+    {
         return $this->setOption(CURLOPT_TRANSFERTEXT, $value);
     }
 
@@ -634,20 +812,26 @@ class CURL {
      * CURLOPT_UNRESTRICTED_AUTH
      * TRUE to keep sending the username and password when following locations
      * (using CURLOPT_FOLLOWLOCATION), even when the hostname has changed.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setUnrestrictedAuth($value) {
+    public function setUnrestrictedAuth($value)
+    {
         return $this->setOption(CURLOPT_UNRESTRICTED_AUTH, $value);
     }
 
     /**
      * CURLOPT_UPLOAD
      * TRUE to prepare for an upload.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setUpload($value) {
+    public function setUpload($value)
+    {
         return $this->setOption(CURLOPT_UPLOAD, $value);
     }
 
@@ -655,10 +839,13 @@ class CURL {
      * CURLOPT_VERBOSE
      * TRUE to output verbose information. Writes output to STDERR, or the file
      * specified using CURLOPT_STDERR.
+     *
      * @param boolean $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setVerbose($value) {
+    public function setVerbose($value)
+    {
         return $this->setOption(CURLOPT_VERBOSE, $value);
     }
 
@@ -667,10 +854,13 @@ class CURL {
      * The size of the buffer to use for each read. There is no guarantee this
      * request will be fulfilled, however.
      * Added in cURL 7.10.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setBufferSize($value) {
+    public function setBufferSize($value)
+    {
         return $this->setOption(CURLOPT_BUFFERSIZE, $value);
     }
 
@@ -679,10 +869,13 @@ class CURL {
      * Either CURLCLOSEPOLICY_LEAST_RECENTLY_USED or CURLCLOSEPOLICY_OLDEST.
      * There are three other CURLCLOSEPOLICY_ constants, but cURL does not
      * support them yet.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setClosePolicy($value) {
+    public function setClosePolicy($value)
+    {
         return $this->setOption(CURLOPT_CLOSEPOLICY, $value);
     }
 
@@ -690,10 +883,13 @@ class CURL {
      * CURLOPT_CONNECTTIMEOUT
      * The number of seconds to wait while trying to connect.
      * Use 0 to wait indefinitely.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setConnectTimeout($value) {
+    public function setConnectTimeout($value)
+    {
         return $this->setOption(CURLOPT_CONNECTTIMEOUT, $value);
     }
 
@@ -706,11 +902,14 @@ class CURL {
      * one second.
      * Added in cURL 7.16.2.
      * Available since PHP 5.2.3.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setConnectionTimeoutMs($value) {
+    public function setConnectionTimeoutMs($value)
+    {
         return $this->setOption(CURLOPT_CONNECTTIMEOUT_MS, $value);
     }
 
@@ -718,10 +917,13 @@ class CURL {
      * CURLOPT_DNS_CACHE_TIMEOUT
      * The number of seconds to keep DNS entries in memory.
      * This option is set to 120 (2 minutes) by default.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setDNSCacheTimouet($value) {
+    public function setDNSCacheTimouet($value)
+    {
         return $this->setOption(CURLOPT_DNS_CACHE_TIMEOUT, $value);
     }
 
@@ -732,22 +934,28 @@ class CURL {
      * CURLFTPAUTH_TLS (try TLS first), or
      * CURLFTPAUTH_DEFAULT (let cURL decide).
      * Added in cURL 7.12.2.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setFtpSslAuth($value) {
+    public function setFtpSslAuth($value)
+    {
         return $this->setOption(CURLOPT_FTPSSLAUTH, $value);
     }
 
     /**
      * CURLOPT_HTTP_VERSION
-     * CURL_HTTP_VERSION_NONE (default, lets CURL decide which version to use),
+     * CURL_HTTP_VERSION_NONE (default, lets Curl decide which version to use),
      * CURL_HTTP_VERSION_1_0 (forces HTTP/1.0), or
      * CURL_HTTP_VERSION_1_1 (forces HTTP/1.1).
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setHttpVersion($value) {
+    public function setHttpVersion($value)
+    {
         return $this->setOption(CURLOPT_HTTP_VERSION, $value);
     }
 
@@ -771,9 +979,11 @@ class CURL {
      * CURLAUTH_DIGEST | CURLAUTH_GSSNEGOTIATE | CURLAUTH_NTLM.
      *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setHttpAuth($value) {
+    public function setHttpAuth($value)
+    {
         return $this->setOption(CURLOPT_HTTPAUTH, $value);
     }
 
@@ -783,10 +993,13 @@ class CURL {
      * remote site. Note that using this option will not stop libcurl from
      * sending more data, as exactly what is sent depends on
      * CURLOPT_READFUNCTION.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setInFileSize($value) {
+    public function setInFileSize($value)
+    {
         return $this->setOption(CURLOPT_INFILESIZE, $value);
     }
 
@@ -795,10 +1008,13 @@ class CURL {
      * The transfer speed, in bytes per second, that the transfer should be
      * below during the count of CURLOPT_LOW_SPEED_TIME seconds before PHP
      * considers the transfer too slow and aborts.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setLowSpeedLimit($value) {
+    public function setLowSpeedLimit($value)
+    {
         return $this->setOption(CURLOPT_LOW_SPEED_LIMIT, $value);
     }
 
@@ -807,10 +1023,13 @@ class CURL {
      * The number of seconds the transfer speed should be below
      * CURLOPT_LOW_SPEED_LIMIT before PHP considers the transfer too slow and
      * aborts.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setLowSpeedTime($value) {
+    public function setLowSpeedTime($value)
+    {
         return $this->setOption(CURLOPT_LOW_SPEED_TIME, $value);
     }
 
@@ -819,10 +1038,13 @@ class CURL {
      * The maximum amount of persistent connections that are allowed. When the
      * limit is reached, CURLOPT_CLOSEPOLICY is used to determine which
      * connection to close.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setMaxConnects($value) {
+    public function setMaxConnects($value)
+    {
         return $this->setOption(CURLOPT_MAXCONNECTS, $value);
     }
 
@@ -830,22 +1052,28 @@ class CURL {
      * CURLOPT_MAXREDIRS
      * The maximum amount of HTTP redirections to follow. Use this option
      * alongside CURLOPT_FOLLOWLOCATION.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setMaxRedirs($value) {
+    public function setMaxRedirs($value)
+    {
         return $this->setOption(CURLOPT_MAXREDIRS, $value);
     }
 
     /**
      * CURLOPT_PORT
      * An alternative port number to connect to.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setPort($value) {
+    public function setPort($value)
+    {
         return $this->setOption(CURLOPT_PORT, $value);
     }
 
@@ -874,10 +1102,12 @@ class CURL {
      * CURLPROTO_ALL
      *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setProtocols($value) {
+    public function setProtocols($value)
+    {
         return $this->setOption(CURLOPT_PROTOCOLS, $value);
     }
 
@@ -888,11 +1118,14 @@ class CURL {
      * authentication, only CURLAUTH_BASIC and CURLAUTH_NTLM are currently
      * supported.
      * Added in cURL 7.10.7.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setProxyAuthr($value) {
+    public function setProxyAuthr($value)
+    {
         return $this->setOption(CURLOPT_PROXYAUTH, $value);
     }
 
@@ -900,10 +1133,13 @@ class CURL {
      * CURLOPT_PROXYPORT
      * The port number of the proxy to connect to. This port number can also be
      * set in CURLOPT_PROXY.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setProxyPort($value) {
+    public function setProxyPort($value)
+    {
         return $this->setOption(CURLOPT_PROXYPORT, $value);
     }
 
@@ -911,11 +1147,14 @@ class CURL {
      * CURLOPT_PROXYTYPE
      * Either CURLPROXY_HTTP (default) or CURLPROXY_SOCKS5.
      * Added in cURL 7.10.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setProxyType($value) {
+    public function setProxyType($value)
+    {
         return $this->setOption(CURLOPT_PROXYTYPE, $value);
     }
 
@@ -931,21 +1170,27 @@ class CURL {
      * Added in cURL 7.19.4.
      *
      * @see CURLOPT_PROTOCOLS for protocol constant values.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setRedirProtocols($value) {
+    public function setRedirProtocols($value)
+    {
         return $this->setOption(CURLOPT_REDIR_PROTOCOLS, $value);
     }
 
     /**
      * CURLOPT_RESUME_FROM     The offset, in bytes, to resume a transfer from.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setResumeFrom($value) {
+    public function setResumeFrom($value)
+    {
         return $this->setOption(CURLOPT_RESUME_FROM, $value);
     }
 
@@ -955,10 +1200,13 @@ class CURL {
      * 2 to check the existence of a common name and also verify that it matches
      * the hostname provided. In production environments the value of this
      * option should be kept at 2 (default value).
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLVerifyHost($value) {
+    public function setSSLVerifyHost($value)
+    {
         return $this->setOption(CURLOPT_SSL_VERIFYHOST, $value);
     }
 
@@ -966,10 +1214,13 @@ class CURL {
      * CURLOPT_SSLVERSION
      * The SSL version (2 or 3) to use. By default PHP will try to determine
      * this itself, although in some cases this must be set manually.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLVersion($value) {
+    public function setSSLVersion($value)
+    {
         return $this->setOption(CURLOPT_SSLVERSION, $value);
     }
 
@@ -981,20 +1232,26 @@ class CURL {
      * header will be returned assuming CURLOPT_HEADER is TRUE.
      * Use CURL_TIMECOND_IFUNMODSINCE for the reverse effect.
      * CURL_TIMECOND_IFMODSINCE is the default.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setTimeCondition($value) {
+    public function setTimeCondition($value)
+    {
         return $this->setOption(CURLOPT_TIMECONDITION, $value);
     }
 
     /**
      * CURLOPT_TIMEOUT
      * The maximum number of seconds to allow cURL functions to execute.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setTimeOut($value) {
+    public function setTimeOut($value)
+    {
         return $this->setOption(CURLOPT_TIMEOUT, $value);
     }
 
@@ -1006,10 +1263,13 @@ class CURL {
      * timeouts with a minimum timeout allowed of one second.
      * Added in cURL 7.16.2.
      * Available since PHP 5.2.3.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setTimeOutMs($value) {
+    public function setTimeOutMs($value)
+    {
         return $this->setOption(CURLOPT_TIMEOUT_MS, $value);
     }
 
@@ -1017,11 +1277,14 @@ class CURL {
      * CURLOPT_TIMEVALUE
      * The time in seconds since January 1st, 1970. The time will be used by
      * CURLOPT_TIMECONDITION. By default, CURL_TIMECOND_IFMODSINCE is used.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setTimeValue($value) {
+    public function setTimeValue($value)
+    {
         return $this->setOption(CURLOPT_TIMEVALUE, $value);
     }
 
@@ -1033,11 +1296,14 @@ class CURL {
      * Defaults to unlimited speed.
      * Added in cURL 7.15.5.
      * Available since PHP 5.4.0.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      *
      */
-    function setMaxRecvSpeedLarge($value) {
+    public function setMaxRecvSpeedLarge($value)
+    {
         // TODO: check for this before setting, since it requires a later PHP
         // version
         return $this->setOption(CURLOPT_MAX_RECV_SPEED_LARGE, $value);
@@ -1051,10 +1317,13 @@ class CURL {
      * Defaults to unlimited speed.
      * Added in cURL 7.15.5.
      * Available since PHP 5.4.0.
+     *
      * @param int $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setMaxSendSpeedLarge($value) {
+    public function setMaxSendSpeedLarge($value)
+    {
         // TODO: check for this before setting, since it requires a later PHP
         // version
         return $this->setOption(CURLOPT_MAX_SEND_SPEED_LARGE, $value);
@@ -1066,10 +1335,13 @@ class CURL {
      * with. This only makes sense when used in combination with
      * CURLOPT_SSL_VERIFYPEER.
      * Requires absolute path.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCAInfo($value) {
+    public function setCAInfo($value)
+    {
         return $this->setOption(CURLOPT_CAINFO, $value);
     }
 
@@ -1077,10 +1349,13 @@ class CURL {
      * CURLOPT_CAPATH
      * A directory that holds multiple CA certificates. Use this option
      * alongside CURLOPT_SSL_VERIFYPEER.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCAPath($value) {
+    public function setCAPath($value)
+    {
         return $this->setOption(CURLOPT_CAPATH, $value);
     }
 
@@ -1089,10 +1364,13 @@ class CURL {
      * The contents of the "Cookie: " header to be used in the HTTP request.
      * Note that multiple cookies are separated with a semicolon followed by a
      * space (e.g., "fruit=apple; colour=red")
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCookie($value) {
+    public function setCookie($value)
+    {
         return $this->setOption(CURLOPT_COOKIE, $value);
     }
 
@@ -1100,10 +1378,13 @@ class CURL {
      * CURLOPT_COOKIEFILE
      * The name of the file containing the cookie data. The cookie file can be
      * in Netscape format, or just plain HTTP-style headers dumped into a file.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCookieField($value) {
+    public function setCookieField($value)
+    {
         return $this->setOption(CURLOPT_COOKIEFILE, $value);
     }
 
@@ -1111,10 +1392,13 @@ class CURL {
      * CURLOPT_COOKIEJAR
      * The name of a file to save all internal cookies to when the handle is
      * closed, e.g. after a call to curl_close.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCookieJar($value) {
+    public function setCookieJar($value)
+    {
         return $this->setOption(CURLOPT_COOKIEJAR, $value);
     }
 
@@ -1128,10 +1412,13 @@ class CURL {
      *
      * Note:
      * Don't do this without making sure the server supports the custom request method first.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setCustomRequest($value) {
+    public function setCustomRequest($value)
+    {
         return $this->setOption(CURLOPT_CUSTOMREQUEST, $value);
     }
 
@@ -1139,10 +1426,13 @@ class CURL {
      * CURLOPT_EGDSOCKET
      * Like CURLOPT_RANDOM_FILE, except a filename to an Entropy Gathering
      * Daemon socket.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setEGDSocket($value) {
+    public function setEGDSocket($value)
+    {
         return $this->setOption(CURLOPT_EGDSOCKET, $value);
     }
 
@@ -1153,10 +1443,13 @@ class CURL {
      * If an empty string, "", is set, a header containing all supported
      * encoding types is sent.
      * Added in cURL 7.10.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setEncoding($value) {
+    public function setEncoding($value)
+    {
         return $this->setOption(CURLOPT_ENCODING, $value);
     }
 
@@ -1167,10 +1460,13 @@ class CURL {
      * connect to our specified IP address. The string may be a plain IP
      * address, a hostname, a network interface name (under Unix), or just a
      * plain '-' to use the systems default IP address.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setFtpPort($value) {
+    public function setFtpPort($value)
+    {
         return $this->setOption(CURLOPT_FTPPORT, $value);
     }
 
@@ -1178,10 +1474,13 @@ class CURL {
      * CURLOPT_INTERFACE
      * The name of the outgoing network interface to use. This can be an
      * interface name, an IP address or a host name.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setInterface($value) {
+    public function setInterface($value)
+    {
         return $this->setOption(CURLOPT_INTERFACE, $value);
     }
 
@@ -1192,10 +1491,13 @@ class CURL {
      * "confidential", "private".. If the string does not match one of these,
      * "private" is used. Setting this option to NULL will disable KRB4
      * security. Currently KRB4 security only works with FTP transactions.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setKRB4Level($value) {
+    public function setKRB4Level($value)
+    {
         return $this->setOption(CURLOPT_KRB4LEVEL, $value);
     }
 
@@ -1210,20 +1512,26 @@ class CURL {
      * the Content-Type header will be set to multipart/form-data.
      * As of PHP 5.2.0, files thats passed to this option with the @ prefix
      * must be in array form to work.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setPostFields($value) {
+    public function setPostFields($value)
+    {
         return $this->setOption(CURLOPT_POSTFIELDS, $value);
     }
 
     /**
      * CURLOPT_PROXY
      * The HTTP proxy to tunnel requests through.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setProxy($value) {
+    public function setProxy($value)
+    {
         return $this->setOption(CURLOPT_PROXY, $value);
     }
 
@@ -1231,20 +1539,26 @@ class CURL {
      * CURLOPT_PROXYUSERPWD
      * A username and password formatted as "[username]:[password]" to use for
      * the connection to the proxy.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setProxyUserPwd($value) {
+    public function setProxyUserPwd($value)
+    {
         return $this->setOption(CURLOPT_PROXYUSERPWD, $value);
     }
 
     /**
      * CURLOPT_RANDOM_FILE
      * A filename to be used to seed the random number generator for SSL.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setRandomFile($value) {
+    public function setRandomFile($value)
+    {
         return $this->setOption(CURLOPT_RANDOM_FILE, $value);
     }
 
@@ -1253,20 +1567,26 @@ class CURL {
      * Range(s) of data to retrieve in the format "X-Y" where X or Y are
      * optional. HTTP transfers also support several intervals, separated with
      * commas in the format "X-Y,N-M".
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setRange($value) {
+    public function setRange($value)
+    {
         return $this->setOption(CURLOPT_RANGE, $value);
     }
 
     /**
      * CURLOPT_REFERER
      * The contents of the "Referer: " header to be used in a HTTP request.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setReferer($value) {
+    public function setReferer($value)
+    {
         return $this->setOption(CURLOPT_REFERER, $value);
     }
 
@@ -1274,30 +1594,39 @@ class CURL {
      * CURLOPT_SSL_CIPHER_LIST
      * A list of ciphers to use for SSL. For example, RC4-SHA and TLSv1 are
      *  valid cipher lists.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLCipherList($value) {
+    public function setSSLCipherList($value)
+    {
         return $this->setOption(CURLOPT_SSL_CIPHER_LIST, $value);
     }
 
     /**
      * CURLOPT_SSLCERT
      * The name of a file containing a PEM formatted certificate.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLCert($value) {
+    public function setSSLCert($value)
+    {
         return $this->setOption(CURLOPT_SSLCERT, $value);
     }
 
     /**
      * CURLOPT_SSLCERTPASSWD
      * The password required to use the CURLOPT_SSLCERT certificate.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLCertPasswd($value) {
+    public function setSSLCertPasswd($value)
+    {
         return $this->setOption(CURLOPT_SSLCERTPASSWD, $value);
     }
 
@@ -1306,10 +1635,13 @@ class CURL {
      * The format of the certificate. Supported formats are "PEM" (default),
      * "DER", and "ENG".
      * Added in cURL 7.9.3.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLCertType($value) {
+    public function setSSLCertType($value)
+    {
         return $this->setOption(CURLOPT_SSLCERTTYPE, $value);
     }
 
@@ -1317,10 +1649,13 @@ class CURL {
      * CURLOPT_SSLENGINE
      * The identifier for the crypto engine of the private SSL key specified
      * in CURLOPT_SSLKEY.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLEngine($value) {
+    public function setSSLEngine($value)
+    {
         return $this->setOption(CURLOPT_SSLENGINE, $value);
     }
 
@@ -1328,20 +1663,26 @@ class CURL {
      * CURLOPT_SSLENGINE_DEFAULT
      * The identifier for the crypto engine used for asymmetric crypto
      * operations.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLEngineDefailt($value) {
+    public function setSSLEngineDefailt($value)
+    {
         return $this->setOption(CURLOPT_SSLENGINE_DEFAULT, $value);
     }
 
     /**
      * CURLOPT_SSLKEY
      * The name of a file containing a private SSL key.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLKey($value) {
+    public function setSSLKey($value)
+    {
         return $this->setOption(CURLOPT_SSLKEY, $value);
     }
 
@@ -1352,10 +1693,13 @@ class CURL {
      * Note:
      * Since this option contains a sensitive password, remember to keep the
      * PHP script it is contained within safe.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLKeyPasswd($value) {
+    public function setSSLKeyPasswd($value)
+    {
         return $this->setOption(CURLOPT_SSLKEYPASSWD, $value);
     }
 
@@ -1363,10 +1707,13 @@ class CURL {
      * CURLOPT_SSLKEYTYPE
      * The key type of the private SSL key specified in CURLOPT_SSLKEY.
      * Supported key types are "PEM" (default), "DER", and "ENG".
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setSSLKeyType($value) {
+    public function setSSLKeyType($value)
+    {
         return $this->setOption(CURLOPT_SSLKEYTYPE, $value);
     }
 
@@ -1374,20 +1721,26 @@ class CURL {
      * CURLOPT_URL
      * The URL to fetch. This can also be set when initializing a session with
      * curl_init().
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setURL($value) {
+    public function setURL($value)
+    {
         return $this->setOption(CURLOPT_URL, $value);
     }
 
     /**
      * CURLOPT_USERAGENT
      * The contents of the "User-Agent: " header to be used in a HTTP request.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setUserAgent($value) {
+    public function setUserAgent($value)
+    {
         return $this->setOption(CURLOPT_USERAGENT, $value);
     }
 
@@ -1395,10 +1748,13 @@ class CURL {
      * CURLOPT_USERPWD
      * A username and password formatted as "[username]:[password]" to use
      * for the connection.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    function setUserPwd($value) {
+    public function setUserPwd($value)
+    {
         return $this->setOption(CURLOPT_USERPWD, $value);
     }
 
@@ -1406,15 +1762,16 @@ class CURL {
      * Add a single HTTP 200 alias.
      * HTTP 200 response that will be treated as valid responses
      * and not as errors.
+     *
      * @param string $alias
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function addHttp200Alias($alias) {
-
+    public function addHttp200Alias($alias)
+    {
         $this->http200Aliases[] = $alias;
 
         return $this->setHttp200Aliases($this->http200Aliases);
-
     }
 
     /**
@@ -1422,143 +1779,161 @@ class CURL {
      * An array of HTTP 200 responses that will be treated as valid responses
      * and not as errors.
      * Added in cURL 7.10.3.
+     *
      * @param array $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHttp200Aliases(array $value) {
-
-        $this->http200Aliases = $value;
+    public function setHttp200Aliases(array $value = array())
+    {
+        $this->http200Aliases = array_values($value);
 
         return $this->setOption(CURLOPT_HTTP200ALIASES, $this->http200Aliases);
-
     }
 
     /**
      * Add a single HTTP header
+     *
      * @param string $key The HTTP header key
      * @param string $value The HTTP value value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function addHttpHeader($key, $value) {
-
+    public function addHttpHeader($key, $value)
+    {
         $this->httpHeaders[] = sprintf("%s: %s", $key, $value);
 
         return $this->setHttpHeader($this->httpHeaders);
-
     }
 
     /**
      * CURLOPT_HTTPHEADER
      * An array of HTTP header fields to set, in the format
      * array('Content-type: text/plain', 'Content-length: 100')
+     *
      * @param array $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHttpHeader(array $value) {
-
+    public function setHttpHeader(array $value)
+    {
         $this->httpHeaders = $value;
 
         return $this->setOption(CURLOPT_HTTPHEADER, $this->httpHeaders);
-
     }
 
     /**
      * Add a single FTP command to execute on the server after the FTP request
      * has been performed.
+     *
      * @param string $command
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function addPostQuote($command) {
-
+    public function addPostQuote($command)
+    {
         $this->postQuotes[] = $command;
 
         return $this->setPostQuote($this->postQuotes);
-
     }
 
     /**
      * CURLOPT_POSTQUOTE
      * An array of FTP commands to execute on the server after the FTP request
      * has been performed.
+     *
      * @param array $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setPostQuote(array $value) {
-
+    public function setPostQuote(array $value)
+    {
         $this->postQuotes = $value;
 
         return $this->setOption(CURLOPT_POSTQUOTE, $value);
-
     }
-
 
     /**
      * Add a single FTP commands to execute on the server prior to the FTP
      * request.
+     *
      * @param string $command The command to add
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function addQuote($command) {
-
+    public function addQuote($command)
+    {
         $this->quotes[] = $command;
 
         return $this->setQuote($this->quotes);
-
     }
 
     /**
      * CURLOPT_QUOTE
      * An array of FTP commands to execute on the server prior to the FTP
      * request.
+     *
      * @param array $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setQuote(array $value) {
-
+    public function setQuote(array $value)
+    {
         $this->quotes = $value;
 
         return $this->setOption(CURLOPT_QUOTE, $value);
-
     }
 
     /**
      * CURLOPT_FILE
      * The file that the transfer should be written to.
      * The default is STDOUT (the browser window).
+     *
      * @param resource $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setFile($value) {
+    public function setFile($value)
+    {
         return $this->setOption(CURLOPT_FILE, $value);
     }
 
     /**
      * CURLOPT_INFILE
      * The file that the transfer should be read from when uploading.
+     *
      * @param resource $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setInFile($value) {
+    public function setInFile($value)
+    {
         return $this->setOption(CURLOPT_INFILE, $value);
     }
 
     /**
      * CURLOPT_STDERR
      * An alternative location to output errors to instead of STDERR.
+     *
      * @param resource $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setStdErr($value) {
+    public function setStdErr($value)
+    {
         return $this->setOption(CURLOPT_STDERR, $value);
     }
 
     /**
      * CURLOPT_WRITEHEADER
      * The file that the header part of the transfer is written to.
+     *
      * @param resource $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setWriteHeader($value) {
+    public function setWriteHeader($value)
+    {
         return $this->setOption(CURLOPT_WRITEHEADER, $value);
     }
 
@@ -1568,10 +1943,13 @@ class CURL {
      * parameters. The first is the cURL resource, the second is a string with
      * the header data to be written. The header data must be written when
      * using this callback function. Return the number of bytes written.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setHeaderFunction($value) {
+    public function setHeaderFunction($value)
+    {
         return $this->setOption(CURLOPT_HEADERFUNCTION, $value);
     }
 
@@ -1581,10 +1959,13 @@ class CURL {
      * parameters. The first is the cURL resource, the second is a string
      * containing a password prompt, and the third is the maximum password
      * length. Return the string containing the password.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setPasswdFunction($value) {
+    public function setPasswdFunction($value)
+    {
         return $this->setOption(CURLOPT_PASSWDFUNCTION, $value);
     }
 
@@ -1594,10 +1975,13 @@ class CURL {
      * parameters. The first is the cURL resource, the second is a
      * file-descriptor resource, and the third is length. Return the string
      * containing the data.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setProgressFunction($value) {
+    public function setProgressFunction($value)
+    {
         return $this->setOption(CURLOPT_PROGRESSFUNCTION, $value);
     }
 
@@ -1610,10 +1994,13 @@ class CURL {
      * must return a string with a length equal or smaller than the amount of
      * data requested, typically by reading it from the passed stream resource.
      * It should return an empty string to signal EOF.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setReadFunction($value) {
+    public function setReadFunction($value)
+    {
         return $this->setOption(CURLOPT_READFUNCTION, $value);
     }
 
@@ -1624,20 +2011,13 @@ class CURL {
      * with the data to be written. The data must be saved by using this
      * callback function. It must return the exact number of bytes written or
      * the transfer will be aborted with an error.
+     *
      * @param string $value
-     * @return CURL
+     *
+     * @return Curl
      */
-    public function setWriteFunction($value) {
+    public function setWriteFunction($value)
+    {
         return $this->setOption(CURLOPT_WRITEFUNCTION, $value);
     }
-
-    /**
-     * Initiate a CURL object
-     * @param string $url Optional URL to use for this CURL session
-     * @return CURL The initiated CURL object
-     */
-    public static function init($url = null) {
-        return new CURL($url);
-    }
-
 }

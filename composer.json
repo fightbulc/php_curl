@@ -2,7 +2,6 @@
     "name": "fightbulc/php_curl",
     "description": "PHP CURL as object-oriented implementation.",
     "homepage": "https://github.com/fightbulc/php_curl",
-    "version": "1.0.0",
     "license": "GPL-3.0",
     "authors": [
         {
@@ -10,15 +9,13 @@
             "homepage": "https://github.com/BauerUK"
         }
     ],
-
-    "minimum-stability": "dev",
-
     "require": {
         "php": ">=5.3.3",
         "ext-curl": "*"
     },
-
     "autoload": {
-        "classmap": ["src/"]
+        "psr-0": {
+            "Wrapper\\Curl": "src"
+        }
     }
 }
