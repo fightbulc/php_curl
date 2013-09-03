@@ -1257,7 +1257,7 @@ class Curl
      *
      * @return Curl
      */
-    public function setCookieField($value)
+    public function setCookieFile($value)
     {
         return $this->setOption(CURLOPT_COOKIEFILE, $value);
     }
