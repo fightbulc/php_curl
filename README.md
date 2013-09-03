@@ -8,33 +8,21 @@ Since PHP_CURL allows for method-chaining, the static `init` method is used to
 generate an instance of a CURL object (similar to `curl_init`).
 
 ```php
-<?php
-
 $curl = \Wrapper\Curl\Curl::init('http://reddit.com/r/php/.json');
-
-?>
 ```
 
 We can then set some CURL options:
 
 ```php
-<?php
-
 $curl = \Wrapper\Curl\Curl::init('http://www.reddit.com/r/php/.json')->setReturnTransfer(true);
-
-?>
 ```
 
 All `set...` functions return an instance of the current CURL object, so you
 are free to set as many of the options in a row as necessary before executing.
 
 ```php
-<?php
-
 $curl = \Wrapper\Curl\Curl::init('http://www.reddit.com/r/php/.json')->setReturnTransfer(true);
 $response = $curl->execute():
-
-?>
 ```
 
 All of the functions are close matches to the `CURLOPT_*` alternatives.
@@ -44,8 +32,6 @@ All of the functions are close matches to the `CURLOPT_*` alternatives.
 The basic example given in the PHP manual for functional cURL is as follows:
 
 ```php
-<?php
-
 $ch = curl_init('http://www.example.com/');
 $fp = fopen('example_homepage.txt', 'w');
 
@@ -55,15 +41,11 @@ curl_setopt($ch, CURLOPT_HEADER, 0);
 curl_exec($ch);
 curl_close($ch);
 fclose($fp);
-
-?>
 ```
 
 We can perform the same operation with PHP_CURL like so:
 
 ```php
-<?php
-
 $fp = fopen('example_homepage.txt', 'w');
 
 \Wrapper\Curl\Curl::init('http://www.example.com/')
@@ -73,8 +55,6 @@ $fp = fopen('example_homepage.txt', 'w');
         ->close();
 
 fclose($fp);
-
-?>
 ```
 
 There isn't much of a difference in terms of code-size or performance, however,
